@@ -16,7 +16,65 @@ const val maxPartForChart = 1 - partForName - partForLegend
 
 fun drawChart(renderer: Renderer, width: Int, height: Int, chart: Chart) {
     chartRenderer[chart.type]?.invoke(renderer, width, height, chart.data)
+    drawChartName(renderer, width, renderer.chartTop, chart.name)
+    drawChartLegend(renderer, width, height - renderer.chartBottom, chart.data)
 }
+
+/**
+* draw [name] of chart on [renderer] canvas of [width] x [height] size
+*/
+
+fun drawChartName(renderer: Renderer, width: Int, height: Int, name: String) {
+    val canvas = renderer.canvas!!
+    val textPaint = renderer.textPaint
+    val font = renderer.calculateFont(height, width, name.length)
+    val textWidth = font.measureTextWidth(name, textPaint)
+
+    canvas.drawTextLine(TextLine.make(name, font), (width - textWidth) / 2, height.toFloat(), textPaint)
+}
+
+/**
+* draw legend of [chartData] on [renderer] canvas of [width] x [height] size
+*/
+
+fun drawChartLegend(renderer: Renderer, width: Int, height: Int, chartData: List<ChartData>) {
+    val canvas = renderer.canvas!!
+    val textPaint = renderer.textPaint
+
+    val summaryLength = chartData.sumOf { (label, _) -> label.length + 3 }
+    val font = renderer.calculateFont(height, width, summaryLength)
+    val letterHeight = font.measureText("n").height
+    val padding = font.size
+
+    val legendLength = chartData.sumOf { (label, _) ->
+        font.measureTextWidth(label, textPaint).toDouble() + 3 * padding
+    }.toFloat()
+    val circleRadius = font.size / 2
+    var leftBorder = width / 2f - legendLength / 2f
+
+    /**
+     * draw legend block for [label] with circle of [color], beginning at [left] x coordinate and with [center] y coordinate
+     */
+    fun drawLegendBlock(label: String, color: Int, left: Float, center: Float) {
+        val textRect = font.measureText(label, textPaint)
+        val textWidth = textRect.width
+        // draw colored circle for label
+        var currentLeft = left + padding
+        canvas.drawCircle(currentLeft + circleRadius, center, circleRadius, Paint().apply {
+            this.color = color
+            mode = PaintMode.FILL
+        })
+        currentLeft += 2 * padding
+        canvas.drawTextLine(TextLine.make(label, font), currentLeft, center + letterHeight / 2, textPaint)
+        leftBorder = currentLeft + textWidth
+    }
+
+    val coloredChartData = chartData zip colors
+    coloredChartData.forEach { (item, color) ->
+        drawLegendBlock(item.label, color, leftBorder, renderer.chartBottom + circleRadius)
+    }
+}
+
 /**
  * draw pie chart of [chartData] on [renderer] canvas of [width] x [height] size
  */
@@ -30,7 +88,7 @@ fun drawPieChart(renderer: Renderer, width: Int, height: Int, chartData: List<Ch
     val fillPaint = renderer.fillPaint
 
     // Calculate center and radius of the pie
-    val explodeOffset = 10f
+    val explodeOffset = 15f
     val radius = min(width.toFloat(), height * maxPartForChart) / 2f - 2 * explodeOffset
     val center = Point(width / 2f, height * partForName + height * maxPartForChart / 2f)
     val rect = Rect(
