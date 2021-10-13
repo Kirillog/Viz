@@ -36,11 +36,12 @@ if (project.hasProperty("skiko.version")) {
 
 dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
-    implementation(kotlin("stdlib-jdk8"))
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.4.1")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.31")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.5.2-native-mt")
     implementation("org.jetbrains.skiko:skiko-jvm-runtime-$target:$version")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.2.1")
-    testImplementation(kotlin("test"))
+    testImplementation("org.jetbrains.kotlin:kotlin-test:1.5.31")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.8.1")
 }
 
 

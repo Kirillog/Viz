@@ -1,7 +1,7 @@
 import java.io.File
 import java.io.IOException
 
-class Shell(file: File?) {
+class Shell(file: File? = null) {
     var exit = false
     var readFromFile = false
     private val enableChartTypes = mutableSetOf<String>()
@@ -38,9 +38,11 @@ class Shell(file: File?) {
         return when (stringOperation) {
             "draw" -> {
                 if (arguments.isEmpty())
-                    throw IOException("Incorrect number of arguments for $stringOperation")
+                    throw IOException("Missing operand after $stringOperation")
                 if (!enableChartTypes.contains(arguments.first()))
                     throw IOException("Unknown type of chart -- '${arguments.first()}'")
+                if (arguments.size != 1)
+                    throw IOException("Extra operands after $stringOperation")
                 ChartType.valueOf(arguments.first().uppercase())
             }
             "quit" ->
