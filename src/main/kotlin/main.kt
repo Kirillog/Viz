@@ -1,7 +1,8 @@
 import java.io.IOException
 
-fun main() {
-    val shell = Shell()
+fun main(args:Array<String>) {
+    val file = parse(args)
+    val shell = Shell(file)
     while (!shell.exit) {
         try {
             val chartType = shell.readChartType() ?: break

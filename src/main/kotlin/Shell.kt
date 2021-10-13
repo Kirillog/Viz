@@ -1,11 +1,21 @@
+import java.io.File
 import java.io.IOException
 
-class Shell {
+class Shell(file: File?) {
     var exit = false
+    var readFromFile = false
     private val enableChartTypes = mutableSetOf<String>()
 
     init {
-        System.setErr(System.out)
+        if (file != null) {
+            readFromFile = true
+            Color.values().forEach { color ->
+                color.code = ""
+            }
+            System.setIn(file.inputStream())
+        } else {
+            System.setErr(System.out)
+        }
         ChartType.values().forEach { type ->
             enableChartTypes.add(type.toString().lowercase())
         }
@@ -16,7 +26,7 @@ class Shell {
      */
 
     fun readChartType(): ChartType? {
-        var line : String?
+        var line: String?
         do {
             printMessage("command")
             line = readLine()?.trim()
@@ -44,8 +54,8 @@ class Shell {
      * read chart name from standard input and returns it
      */
 
-    fun readChartName() : String? {
-        var line : String?
+    fun readChartName(): String? {
+        var line: String?
         do {
             printMessage("name")
             line = readLine()?.trim()
@@ -77,12 +87,13 @@ class Shell {
      * draw [chart] at new window
      */
 
-    fun drawChart(chart : Chart) {
+    fun drawChart(chart: Chart) {
         createWindowOf(chart)
     }
 
     private fun printMessage(msg: String) {
-        print("${Color.BLUE}$msg: ${Color.RESET}")
+        if (!readFromFile)
+            print("${Color.BLUE}$msg: ${Color.RESET}")
     }
 
     fun println(message: String) {
