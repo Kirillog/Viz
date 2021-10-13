@@ -1,0 +1,9 @@
+draw pie
+Favourite types of films
+Comedy->270
+Action->180
+Romance->145
+Drama->135
+Horror->109
+Foreign->81
+Science fiction->80
