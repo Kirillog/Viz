@@ -4,7 +4,8 @@ val chartRenderer = mapOf(
     ChartType.PIE to ::drawPieChart,
     ChartType.BAR to ::drawBarChart,
     ChartType.LINE to ::drawLineChart,
-    ChartType.AREA to ::drawAreaChart
+    ChartType.AREA to ::drawAreaChart,
+    ChartType.SCATTER to ::drawScatterChart
 )
 
 const val blocksPadding = 5f
