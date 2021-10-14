@@ -40,17 +40,21 @@ class Renderer(
         strokeWidth = 3f
     }
 
-    val paint = Paint().apply {
+    val borderPaint = Paint().apply {
         mode = PaintMode.STROKE
-        strokeWidth = 1f
+        strokeWidth = 0.4f
     }
 
     val fillPaint = Paint().apply {
         mode = PaintMode.FILL
     }
 
-    fun calculateFont(height : Int, width: Int, textLength:Int): Font {
-        return Font(typeface, min(font.size, min(height.toFloat(), width.toFloat() / textLength)))
+    fun fontAt(height : Int, width: Int, textLength:Int): Font {
+        return Font(typeface, calculateFontSize(height, width, textLength))
+    }
+
+    fun calculateFontSize(height : Int, width: Int, textLength:Int) : Float {
+        return min(font.size, min(height.toFloat(), width.toFloat() / textLength))
     }
 
     override fun onRender(canvas: Canvas, width: Int, height: Int, nanoTime: Long) {
