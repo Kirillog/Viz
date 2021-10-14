@@ -1,0 +1,7 @@
+draw line
+Machine Capacity
+1->2.5
+2->2.2
+3->2.3
+4->1.9
+5->1.8
