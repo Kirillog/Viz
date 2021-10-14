@@ -2,7 +2,8 @@ import org.jetbrains.skija.*
 
 val chartRenderer = mapOf(
     ChartType.PIE to ::drawPieChart,
-    ChartType.BAR to ::drawBarChart
+    ChartType.BAR to ::drawBarChart,
+    ChartType.LINE to ::drawLineChart
 )
 
 const val blocksPadding = 5f
