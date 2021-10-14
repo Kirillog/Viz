@@ -12,8 +12,12 @@ const val baseToInt = 100
  */
 
 fun calculateScaleFor(values: List<Int>, size: Int): Scale {
-    fun signsAfterDot(value : Float) : Int {
-        return value.toString().dropWhile { it != '.' }.length
+    fun signsAfterDot(value: Float): Int {
+        val mantissa = value.toString().dropWhile { it != '.' }
+        return if (mantissa == ".0")
+            0
+        else
+            mantissa.length
     }
 
     val maxValue = values.maxOf { it }
@@ -50,11 +54,11 @@ data class Scale(val marksAmount: Int, val interval: Float, val signs: Int)
 class Field(
     private val renderer: Renderer,
     private val height: Int, private val width: Int,
-    scaleX: Scale, private val scaleY: Scale,
+    val scaleX: Scale, val scaleY: Scale,
 ) {
     val cellWidth = width * planePart / scaleX.marksAmount
     private val xMarks = List(scaleX.marksAmount + 1) { x -> width * axisPart + x * cellWidth }
-    val movedXMarks = xMarks.map { it + cellWidth / 2 }
+    val movedXMarks = xMarks.map { it + cellWidth / 2 }.dropLast(1)
     val yMarks = List(scaleY.marksAmount + 1) { y -> height * partForName + cellHeight * y }.reversed()
     val valueMarks = List(yMarks.size) { it * scaleY.interval * baseToInt }
 
@@ -65,7 +69,8 @@ class Field(
     private fun drawNumberYAxis(startX: Float) {
         val marks = List(yMarks.size) { it * scaleY.interval }
         val maxStringLength = designNumber(marks.last()).length
-        val axisFont = renderer.fontAt((cellHeight / 2).toInt(), (width * axisPart - markLength).toInt(), maxStringLength)
+        val axisFont =
+            renderer.fontAt((cellHeight / 2).toInt(), (width * axisPart - markLength).toInt(), maxStringLength)
         val yValues = marks zip yMarks
         for ((mark, y) in yValues) {
             canvas.drawLine(startX, y, startX - markLength, y, borderPaint)
@@ -79,6 +84,12 @@ class Field(
                 y + textHeight,
                 textPaint
             )
+        }
+        val miniMarks =
+            List(scaleY.marksAmount * (cellHeight / stepY).toInt()) { y -> height * partForName + stepY * y }
+        for (i in miniMarks.indices) {
+            if (i % 5 != 0)
+                canvas.drawLine(startX, miniMarks[i], startX - stepY, miniMarks[i], borderPaint)
         }
     }
 
