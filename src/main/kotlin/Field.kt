@@ -23,7 +23,7 @@ fun calculateScaleFor(values: List<Int>, size: Int): Scale {
     val maxValue = values.maxOf { it }
     var result = maxValue
     var scaleInterval = 10
-    val maxNumberOfCells = (size * maxPartForChart * planePart).toInt() / cellHeight
+    val maxNumberOfCells = (size * (1 - partForName) * (1 - axisPart)).toInt() / cellHeight
     while (result > maxNumberOfCells) {
         result = (maxValue + scaleInterval - 1) / scaleInterval
         scaleInterval *= 10
@@ -67,7 +67,7 @@ class Field(
     private val textPaint = renderer.textPaint
 
     private fun drawNumberYAxis(startX: Float) {
-        val marks = List(yMarks.size) { it * scaleY.interval }
+        val marks = List(yMarks.size) { (it * scaleY.interval * baseToInt).toInt() }
         val maxStringLength = designNumber(marks.last()).length
         val axisFont =
             renderer.fontAt((cellHeight / 2).toInt(), (width * axisPart - markLength).toInt(), maxStringLength)
@@ -97,13 +97,13 @@ class Field(
         startY: Float,
         labels: List<String>,
     ) {
-        val maxStringLength = labels.sumOf { label -> label.length + 1 }
+        val maxStringLength = labels.maxOf { label -> label.length }
         val axisFont = renderer.fontAt((height * axisPart).toInt(), cellWidth.toInt(), maxStringLength)
         val xLabels = labels zip movedXMarks
         xLabels.forEach { (label, x) ->
             canvas.drawLine(x, startY, x, startY + markLength, borderPaint)
             val rectText = axisFont.measureText(label, renderer.textPaint)
-            val textHeight = rectText.height
+            val textHeight = axisFont.size
             val textWidth = rectText.width / 2
             canvas.drawTextLine(
                 TextLine.make(label, axisFont),
@@ -114,13 +114,13 @@ class Field(
         }
     }
 
-    private fun designNumber(value: Float): String {
+    private fun designNumber(value: Int): String {
         val result = StringBuilder()
         val signsAfterDot = if (scaleY.signs > 0) {
-            value.toString().dropWhile { it != '.' }.padEnd(scaleY.signs, '0')
+            (value / baseToInt.toFloat()).toString().dropWhile { it != '.' }.padEnd(scaleY.signs, '0')
         } else
             ""
-        var number = value.toInt()
+        var number = value / baseToInt
         var bit = 0
         do {
             result.append(number % 10)
