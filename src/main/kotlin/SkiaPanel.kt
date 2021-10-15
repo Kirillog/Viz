@@ -6,6 +6,10 @@ import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import javax.swing.JLayeredPane
 
+/**
+ * allows including skia layer in JFrame
+ */
+
 class SkiaPanel : JLayeredPane() {
     val layer = SkiaLayer()
 

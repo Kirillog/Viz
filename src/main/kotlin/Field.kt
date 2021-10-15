@@ -24,11 +24,13 @@ fun calculateScaleFor(values: List<Int>, size: Int): Scale {
     var result = maxValue
     var scaleInterval = 10
     val maxNumberOfCells = (size * (1 - partForName) * (1 - axisPart)).toInt() / cellHeight
+    // calculate minimum possible scaleInterval of 10^k type
     while (result > maxNumberOfCells) {
         result = (maxValue + scaleInterval - 1) / scaleInterval
         scaleInterval *= 10
     }
     scaleInterval /= 10
+    // try to divide scale on scaleExtensions constants
     val scaleExtensions = listOf(5, 4, 2)
     scaleExtensions.forEach { scale ->
         if (result * scale < maxNumberOfCells) {
@@ -73,11 +75,13 @@ class Field(
             renderer.fontAt((cellHeight / 2).toInt(), (width * axisPart - markLength).toInt(), maxStringLength)
         val yValues = marks zip yMarks
         for ((mark, y) in yValues) {
+            // draw mark on axis
             canvas.drawLine(startX, y, startX - markLength, y, borderPaint)
             val number = designNumber(mark)
             val rectText = axisFont.measureText(number, renderer.textPaint)
             val textHeight = rectText.height / 2
             val textWidth = rectText.width
+            // draw number for mark on axis
             canvas.drawTextLine(
                 TextLine.make(number, axisFont),
                 startX - textWidth - cellHeight / 2,
@@ -85,12 +89,12 @@ class Field(
                 textPaint
             )
         }
+        // draw mini marks between main marks on axis
         val miniMarks =
             List(scaleY.marksAmount * (cellHeight / stepY).toInt()) { y -> height * partForName + stepY * y }
-        for (i in miniMarks.indices) {
+        for (i in miniMarks.indices)
             if (i % 5 != 0)
                 canvas.drawLine(startX, miniMarks[i], startX - stepY, miniMarks[i], borderPaint)
-        }
     }
 
     private fun drawCategoryXAxis(
@@ -101,10 +105,12 @@ class Field(
         val axisFont = renderer.fontAt((height * axisPart).toInt(), cellWidth.toInt(), maxStringLength)
         val xLabels = labels zip movedXMarks
         xLabels.forEach { (label, x) ->
+            // draw marks on axis
             canvas.drawLine(x, startY, x, startY + markLength, borderPaint)
             val rectText = axisFont.measureText(label, renderer.textPaint)
             val textHeight = axisFont.size
             val textWidth = rectText.width / 2
+            // draw labels for mark
             canvas.drawTextLine(
                 TextLine.make(label, axisFont),
                 x - textWidth,
@@ -116,6 +122,7 @@ class Field(
 
     private fun designNumber(value: Int): String {
         val result = StringBuilder()
+        // add trailing zeros for float scale
         val signsAfterDot = if (scaleY.signs > 0) {
             (value / baseToInt.toFloat()).toString().dropWhile { it != '.' }.padEnd(scaleY.signs, '0')
         } else
@@ -124,6 +131,7 @@ class Field(
         var bit = 0
         do {
             result.append(number % 10)
+            // add separators for each 3 sign
             if (bit % 3 == 2 && number > 10)
                 result.append(',')
             number /= 10
@@ -140,13 +148,14 @@ class Field(
         }
         val borderRect = Rect(xMarks.first(), yMarks.last(), xMarks.last(), yMarks.first())
 
+        // draw checkered field
         canvas.drawRect(borderRect, borderPaint)
         for (x in xMarks.dropLast(1).drop(1))
             canvas.drawLine(x, yMarks.first(), x, yMarks.last(), coordinatePaint)
         for (y in yMarks.dropLast(1).drop(1))
             canvas.drawLine(xMarks.first(), y, xMarks.last(), y, coordinatePaint)
 
-        // Calculate chart top and bottom y coordinates with paddings
+        // calculate chart top and bottom y coordinates with paddings
         renderer.chartTop = (borderRect.top - borderPaint.strokeWidth - blocksPadding).toInt()
         renderer.chartBottom = (borderRect.bottom + borderPaint.strokeWidth + blocksPadding).toInt()
     }

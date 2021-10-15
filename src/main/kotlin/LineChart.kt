@@ -2,6 +2,10 @@ import org.jetbrains.skija.Color
 import org.jetbrains.skija.Paint
 import org.jetbrains.skija.PaintMode
 
+/**
+ * calculates y coordinate for each value of [values] in [field]
+ */
+
 fun calculateYByValue(field: Field, values: List<Int>): List<Float> {
     val result = mutableListOf<Float>()
     for (i in 0 until field.scaleX.marksAmount) {
@@ -15,6 +19,10 @@ fun calculateYByValue(field: Field, values: List<Int>): List<Float> {
     }
     return result
 }
+
+/**
+ * draw line chart of [chartData] on [renderer] canvas of [width] x [height] size
+ */
 
 fun drawLineChart(renderer: Renderer, width: Int, height: Int, chartData: List<ChartData>) {
     val canvas = renderer.canvas!!
@@ -40,8 +48,10 @@ fun drawLineChart(renderer: Renderer, width: Int, height: Int, chartData: List<C
 
     val coordinateY = calculateYByValue(field, values)
 
+    // draw segments for neighbouring points
     for (i in 0 until coordinateY.size - 1)
         canvas.drawLine(field.movedXMarks[i], coordinateY[i], field.movedXMarks[i + 1], coordinateY[i + 1], fillPaint)
+    // draw circles for each point
     for (i in coordinateY.indices) {
         canvas.drawCircle(field.movedXMarks[i], coordinateY[i], 5f, fillPaint)
         canvas.drawCircle(field.movedXMarks[i], coordinateY[i], 3f, whiteFillPaint)

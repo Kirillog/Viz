@@ -18,7 +18,7 @@ fun drawBarChart(renderer: Renderer, width: Int, height: Int, chartData: List<Ch
     val field = Field(renderer, height, width, xScale, yScale)
     field.drawCoordinatePlane(labels)
     val coordinateY = calculateYByValue(field, values)
-
+    // draw bars for values
     for (i in 0 until field.scaleX.marksAmount) {
         canvas.drawRect(
             Rect(

@@ -24,7 +24,7 @@ fun drawScatterChart(renderer: Renderer, width: Int, height: Int, chartData: Lis
     val field = Field(renderer, height, width, xScale, yScale)
     field.drawCoordinatePlane(labels)
     val coordinateY = calculateYByValue(field, values)
-
+    // draw circles for each point
     for (i in 0 until field.scaleX.marksAmount) {
         canvas.drawCircle(field.movedXMarks[i], coordinateY[i], 5f, fillPaint)
         canvas.drawCircle(field.movedXMarks[i], coordinateY[i], 3f, whiteFillPaint)

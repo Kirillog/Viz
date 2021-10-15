@@ -15,6 +15,10 @@ import javax.swing.*
 import javax.swing.filechooser.FileFilter
 import kotlin.math.min
 
+/**
+ * Extends FileFilter to filter files for charts
+ */
+
 class ChartFileFilter(var extension: String?, private var description: String?) : FileFilter() {
 
     override fun accept(file: File?): Boolean {
@@ -34,6 +38,10 @@ class ChartFileFilter(var extension: String?, private var description: String?) 
     }
 }
 
+/**
+ * Creates menu of actions for [panel] at the top of [window]
+ */
+
 @DelicateCoroutinesApi
 fun createMenu(window: JFrame, panel: SkiaPanel) {
     val menuBar = JMenuBar()
@@ -41,21 +49,24 @@ fun createMenu(window: JFrame, panel: SkiaPanel) {
     menuBar.add(fileMenu)
 
     val fileChooser = JFileChooser()
-
+    // add screenshot option
     val miTakeScreenshot = JMenuItem("Screenshot")
     val ctrlS = KeyStroke.getKeyStroke(KeyEvent.VK_S, Toolkit.getDefaultToolkit().menuShortcutKeyMaskEx)
     miTakeScreenshot.accelerator = ctrlS
     miTakeScreenshot.addActionListener {
         fileChooser.dialogType = JFileChooser.SAVE_DIALOG
         fileChooser.fileSelectionMode = JFileChooser.FILES_ONLY
+        // filter .png files
         val fileFilter = ChartFileFilter("png", "Charts (*.png)")
         fileChooser.addChoosableFileFilter(fileFilter)
         val result = fileChooser.showSaveDialog(panel)
         if (result == JFileChooser.APPROVE_OPTION) {
+            // add extension if user forget to enter it
             val selectedFile = if (fileFilter.accept(fileChooser.selectedFile))
                 fileChooser.selectedFile
             else
                 File("${fileChooser.selectedFile.absolutePath}.${fileFilter.extension}")
+            // take screenshot and put it to selected file
             val screenshot = panel.layer.screenshot()!!
             GlobalScope.launch(Dispatchers.IO) {
                 val image = screenshot.toBufferedImage()
@@ -67,6 +78,10 @@ fun createMenu(window: JFrame, panel: SkiaPanel) {
     fileMenu.add(miTakeScreenshot)
     window.jMenuBar = menuBar
 }
+
+/**
+ * Creates window of [chart]
+ */
 
 @DelicateCoroutinesApi
 fun createWindowOf(chart: Chart) = SwingUtilities.invokeLater {
