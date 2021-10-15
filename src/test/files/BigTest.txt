@@ -1,0 +1,8 @@
+draw area
+Number of users online
+January->1000
+February->789
+March->980
+April->500
+May->131
+June->300
