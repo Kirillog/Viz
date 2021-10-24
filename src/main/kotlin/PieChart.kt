@@ -92,10 +92,10 @@ fun drawSlice(
 }
 
 /**
- * draw pie chart of [chartData] on [renderer] canvas of [width] x [height] size
+ * draw pie chart of [values] and [labels] on [renderer] canvas of [width] x [height] size
  */
 
-fun drawPieChart(renderer: Renderer, width: Int, height: Int, chartData: List<ChartData>) {
+fun drawPieChart(renderer: Renderer, width: Int, height: Int, labels: List<String>, values: List<Int>) {
     val borderPaint = Paint().apply {
         mode = PaintMode.STROKE
         strokeWidth = 3f
@@ -108,19 +108,18 @@ fun drawPieChart(renderer: Renderer, width: Int, height: Int, chartData: List<Ch
         center.x + radius, center.y + radius
     )
 
-    val values = chartData.map { it.value }
     val summaryWeight = values.sumOf { it }
     val coloredChartData = values zip colors
 
     var startAngle = 0f
     coloredChartData.forEach { (value, color) ->
-        val sweepAngle = (value / summaryWeight).toFloat() * 360f
+        val sweepAngle = value.toFloat() / summaryWeight * 360f
         drawSlice(renderer, startAngle, sweepAngle, center, radius, color, borderPaint)
         startAngle += sweepAngle
     }
     // Calculate chart top and bottom y coordinates with paddings
     renderer.chartTop = (borderRect.top - explodeOffset - borderPaint.strokeWidth - blocksPadding).toInt()
     renderer.chartBottom = (borderRect.bottom + explodeOffset + borderPaint.strokeWidth + blocksPadding).toInt()
-    drawPieChartLegend(renderer, width, height - renderer.chartBottom, chartData.map {it.label})
+    drawPieChartLegend(renderer, width, height - renderer.chartBottom, labels)
 }
 

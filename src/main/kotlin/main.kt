@@ -1,5 +1,3 @@
-import java.io.IOException
-
 fun main(args:Array<String>) {
     val file = parse(args)
     val shell = Shell(file)
@@ -9,7 +7,7 @@ fun main(args:Array<String>) {
             val chartName = shell.readChartName() ?: break
             val chartData = shell.readChartData()
             shell.drawChart(Chart(chartName, chartType, chartData))
-        } catch (err: IOException) {
+        } catch (err: Exception) {
             shell.printError(err.message)
         }
     }

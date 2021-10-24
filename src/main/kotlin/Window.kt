@@ -3,6 +3,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.jetbrains.skija.*
+import org.jetbrains.skija.Color
 import org.jetbrains.skiko.SkiaLayer
 import org.jetbrains.skiko.SkiaRenderer
 import org.jetbrains.skiko.toBufferedImage
@@ -124,7 +125,15 @@ class Renderer(
     }
 
     val fillPaint = Paint().apply {
+        color = colors.first()
         mode = PaintMode.FILL
+        strokeWidth = 3f
+    }
+
+    val whiteFillPaint = Paint().apply {
+        color = Color.makeRGB(255, 255, 255)
+        mode = PaintMode.FILL
+        strokeWidth = 3f
     }
 
     fun fontAt(height: Int, width: Int, textLength: Int): Font {
@@ -139,7 +148,7 @@ class Renderer(
         this.canvas = canvas
         val contentScale = layer.contentScale
         canvas.scale(contentScale, contentScale)
-        drawChart(this, (width / contentScale).toInt(), (height / contentScale).toInt())
+        drawChart(this, (width / contentScale).toInt(), (height / contentScale).toInt(), )
         layer.needRedraw()
     }
 }

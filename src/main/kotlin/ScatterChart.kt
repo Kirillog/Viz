@@ -1,32 +1,15 @@
-import org.jetbrains.skija.Color
-import org.jetbrains.skija.Paint
-import org.jetbrains.skija.PaintMode
+/**
+ * draw scatter chart at [field] on [renderer] canvas
+ */
 
-fun drawScatterChart(renderer: Renderer, width: Int, height: Int, chartData: List<ChartData>) {
+fun drawScatterChart(renderer: Renderer, field: Field) {
     val canvas = renderer.canvas!!
-    val fillPaint = Paint().apply {
-        color = colors.first()
-        mode = PaintMode.FILL
-        strokeWidth = 3f
-    }
-    val whiteFillPaint = Paint().apply {
-        color = Color.makeRGB(255, 255, 255)
-        mode = PaintMode.FILL
-        strokeWidth = 3f
-    }
+    val fillPaint = renderer.fillPaint
+    val whiteFillPaint = renderer.whiteFillPaint
 
-    val values = chartData.map { (it.value * baseToInt).toInt() }
-    val labels = chartData.map { it.label }
-
-    val xScale = Scale(chartData.size, 1f, 0)
-    val yScale = calculateScaleFor(values, height)
-
-    val field = Field(renderer, height, width, xScale, yScale)
-    field.drawCoordinatePlane(labels)
-    val coordinateY = calculateYByValue(field, values)
     // draw circles for each point
     for (i in 0 until field.scaleX.marksAmount) {
-        canvas.drawCircle(field.movedXMarks[i], coordinateY[i], 5f, fillPaint)
-        canvas.drawCircle(field.movedXMarks[i], coordinateY[i], 3f, whiteFillPaint)
+        canvas.drawCircle(field.dataX[i], field.dataY[i], 5f, fillPaint)
+        canvas.drawCircle(field.dataX[i], field.dataY[i], 3f, whiteFillPaint)
     }
 }

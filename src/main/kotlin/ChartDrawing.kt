@@ -1,7 +1,6 @@
 import org.jetbrains.skija.*
 
 val chartRenderer = mapOf(
-    ChartType.PIE to ::drawPieChart,
     ChartType.BAR to ::drawBarChart,
     ChartType.LINE to ::drawLineChart,
     ChartType.AREA to ::drawAreaChart,
@@ -18,8 +17,17 @@ const val maxPartForChart = 1 - partForName - partForLegend
  */
 
 fun drawChart(renderer: Renderer, width: Int, height: Int, chart: Chart) {
-    chartRenderer[chart.type]?.invoke(renderer, width, height, chart.data)
-    drawChartName(renderer, width, renderer.chartTop, chart.name)
+    val values = chart.data.map { (it.value * baseToInt).toInt() }
+    val labels = chart.data.map { it.label }
+    if (chart.type == ChartType.PIE) {
+        drawPieChart(renderer, width, height, labels, values)
+    } else {
+        val field = Field(renderer, width, height, labels, values)
+        field.drawCoordinatePlane()
+        chartRenderer[chart.type]?.invoke(renderer, field)
+        drawChartName(renderer, width, renderer.chartTop, chart.name)
+    }
+
 }
 
 /**
