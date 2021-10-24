@@ -8,65 +8,73 @@ const val planePart = (1 - 2 * axisPart)
 const val baseToInt = 100
 
 /**
- * calculates scale for [values] of chart data that it can be drawn at [size] segment
- */
-
-fun calculateScaleFor(values: List<Int>, size: Int): Scale {
-    fun signsAfterDot(value: Float): Int {
-        val mantissa = value.toString().dropWhile { it != '.' }
-        return if (mantissa == ".0")
-            0
-        else
-            mantissa.length
-    }
-
-    val maxValue = values.maxOf { it }
-    var result = maxValue
-    var scaleInterval = 10
-    val maxNumberOfCells = (size * (1 - partForName) * (1 - axisPart)).toInt() / cellHeight
-    // calculate minimum possible scaleInterval of 10^k type
-    while (result > maxNumberOfCells) {
-        result = (maxValue + scaleInterval - 1) / scaleInterval
-        scaleInterval *= 10
-    }
-    scaleInterval /= 10
-    // try to divide scale on scaleExtensions constants
-    val scaleExtensions = listOf(5, 4, 2)
-    scaleExtensions.forEach { scale ->
-        if (result * scale < maxNumberOfCells) {
-            result *= scale
-            return Scale(
-                result,
-                scaleInterval.toFloat() / (baseToInt * scale),
-                signsAfterDot(scaleInterval.toFloat() / (baseToInt * scale))
-            )
-        }
-    }
-    return Scale(result, scaleInterval.toFloat() / baseToInt, 0)
-}
-
-data class Scale(val marksAmount: Int, val interval: Float, val signs: Int)
-
-/**
- * draw background coordinate plane for charts using [renderer] on [height] x [width] canvas
- * @param scaleX scale of x-axis
- * @param scaleY scale if y-axis
+ * draw background coordinate plane for charts of [labels] and [values] using [renderer] on [height] x [width] canvas
  */
 
 class Field(
     private val renderer: Renderer,
-    private val height: Int, private val width: Int,
-    val scaleX: Scale, val scaleY: Scale,
+    private val width: Int, private val height: Int,
+    private val labels: List<String>, private val values: List<Int>
 ) {
+    val scaleX = Scale(labels.size, 1f, 0)
+    val scaleY = calculateScaleFor(values, height)
     val cellWidth = width * planePart / scaleX.marksAmount
-    private val xMarks = List(scaleX.marksAmount + 1) { x -> width * axisPart + x * cellWidth }
-    val movedXMarks = xMarks.map { it + cellWidth / 2 }.dropLast(1)
-    val yMarks = List(scaleY.marksAmount + 1) { y -> height * partForName + cellHeight * y }.reversed()
-    val valueMarks = List(yMarks.size) { it * scaleY.interval * baseToInt }
+
+    var yMarks = listOf<Float>()
+    var xMarks = listOf<Float>()
+    var dataX = listOf<Float>()
+    var dataY = listOf<Float>()
+    var valueMarks = listOf<Float>()
+
+    init {
+        xMarks = List(scaleX.marksAmount + 1) { x -> width * axisPart + x * cellWidth }
+        yMarks = List(scaleY.marksAmount + 1) { y -> height * partForName + cellHeight * y }.reversed()
+        valueMarks = List(yMarks.size) { it * scaleY.interval * baseToInt }
+        dataX = xMarks.map { it + cellWidth / 2 }.dropLast(1)
+        dataY = calculateYByValue()
+    }
 
     private val canvas = renderer.canvas!!
     private val borderPaint = renderer.borderPaint
     private val textPaint = renderer.textPaint
+
+    /**
+     * calculates y coordinate for each value of [values] depending on [scaleX] and [scaleY]
+     */
+
+    private fun calculateYByValue(): List<Float> {
+        val result = mutableListOf<Float>()
+        for (i in 0 until scaleX.marksAmount) {
+            for (j in 0 until scaleY.marksAmount) {
+                if (valueMarks[j] <= values[i] && values[i] <= valueMarks[j + 1]) {
+                    val coefficient = (values[i] - valueMarks[j]) / (scaleY.interval * baseToInt)
+                    result.add(yMarks[j] - coefficient * cellHeight)
+                    break
+                }
+            }
+        }
+        return result
+    }
+
+    private fun designNumber(value: Int): String {
+        val result = StringBuilder()
+        // add trailing zeros for float scale
+        val signsAfterDot = if (scaleY.signs > 0) {
+            (value / baseToInt.toFloat()).toString().dropWhile { it != '.' }.padEnd(scaleY.signs, '0')
+        } else
+            ""
+        var number = value / baseToInt
+        var bit = 0
+        do {
+            result.append(number % 10)
+            // add separators for each 3 sign
+            if (bit % 3 == 2 && number > 10)
+                result.append(',')
+            number /= 10
+            bit++
+        } while (number != 0)
+        return result.reverse().toString() + signsAfterDot
+    }
 
     private fun drawNumberYAxis(startX: Float) {
         val marks = List(yMarks.size) { (it * scaleY.interval * baseToInt).toInt() }
@@ -103,7 +111,7 @@ class Field(
     ) {
         val maxStringLength = labels.maxOf { label -> label.length }
         val axisFont = renderer.fontAt((height * axisPart).toInt(), cellWidth.toInt(), maxStringLength)
-        val xLabels = labels zip movedXMarks
+        val xLabels = labels zip dataX
         xLabels.forEach { (label, x) ->
             // draw marks on axis
             canvas.drawLine(x, startY, x, startY + markLength, borderPaint)
@@ -118,26 +126,6 @@ class Field(
                 renderer.textPaint
             )
         }
-    }
-
-    private fun designNumber(value: Int): String {
-        val result = StringBuilder()
-        // add trailing zeros for float scale
-        val signsAfterDot = if (scaleY.signs > 0) {
-            (value / baseToInt.toFloat()).toString().dropWhile { it != '.' }.padEnd(scaleY.signs, '0')
-        } else
-            ""
-        var number = value / baseToInt
-        var bit = 0
-        do {
-            result.append(number % 10)
-            // add separators for each 3 sign
-            if (bit % 3 == 2 && number > 10)
-                result.append(',')
-            number /= 10
-            bit++
-        } while (number != 0)
-        return result.reverse().toString() + signsAfterDot
     }
 
     private fun drawCheckeredPlane() {
@@ -160,9 +148,11 @@ class Field(
         renderer.chartBottom = (borderRect.bottom + borderPaint.strokeWidth + blocksPadding).toInt()
     }
 
-    fun drawCoordinatePlane(labels: List<String>) {
+    fun drawCoordinatePlane() {
         drawCheckeredPlane()
         drawNumberYAxis(xMarks.first())
         drawCategoryXAxis(yMarks.first(), labels)
     }
 }
+
+
