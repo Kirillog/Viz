@@ -121,5 +121,6 @@ fun drawPieChart(renderer: Renderer, width: Int, height: Int, chartData: List<Ch
     // Calculate chart top and bottom y coordinates with paddings
     renderer.chartTop = (borderRect.top - explodeOffset - borderPaint.strokeWidth - blocksPadding).toInt()
     renderer.chartBottom = (borderRect.bottom + explodeOffset + borderPaint.strokeWidth + blocksPadding).toInt()
+    drawPieChartLegend(renderer, width, height - renderer.chartBottom, chartData.map {it.label})
 }
 

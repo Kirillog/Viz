@@ -20,8 +20,6 @@ const val maxPartForChart = 1 - partForName - partForLegend
 fun drawChart(renderer: Renderer, width: Int, height: Int, chart: Chart) {
     chartRenderer[chart.type]?.invoke(renderer, width, height, chart.data)
     drawChartName(renderer, width, renderer.chartTop, chart.name)
-    if (chart.type == ChartType.PIE)
-        drawPieChartLegend(renderer, width, height - renderer.chartBottom, chart.data.map {it.label})
 }
 
 /**
