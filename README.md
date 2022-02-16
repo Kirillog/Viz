@@ -1,13 +1,13 @@
-#User guide
+# User guide
 
-##Using
+## Using
 
-###For Windows:
+### For Windows:
 ```#batch
 chartDrawer [FILE]
 ```
 
-###For Linux/MacOS:
+### For Linux/MacOS:
 
 
 ```#bash 
@@ -24,7 +24,7 @@ If you run ```./chartDrawer``` without any parameters, shell will run in interac
 
 The **chartDrawer** utility allows you to view different charts of your data.
 
-###Interactive mode
+### Interactive mode
 If ```FILE``` is not specified, then **shell** starts a loop, in which it reads commands from the standard input and executes them.
 You can interact with **shell**, which waits user commands after ``command: ``. All commands have 
 the following type:
